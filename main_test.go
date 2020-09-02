@@ -124,7 +124,66 @@ func (s *mainSuite) Test_ParsingSimple() {
 	for _, tc := range tests {
 		s.Run(tc.in, func() {
 			res := parse(tc.in)
-			tc.testFn(s, res.Literal)
+			tc.testFn(s, res.LHS)
+		})
+	}
+}
+
+func (s *mainSuite) Test_ParsingExpression() {
+	type tokInfo struct {
+		t rune
+		v string
+	}
+	tests := []struct {
+		in     string
+		testFn func(*mainSuite, *expr)
+	}{
+		{"true == true", func(s *mainSuite, res *expr) {
+			s.True(res.LHS.True())
+			s.Equal("Equal", res.Operator.Kind())
+			s.True(res.RHS.True())
+		}},
+	}
+
+	for _, tc := range tests {
+		s.Run(tc.in, func() {
+			res := parse(tc.in)
+			tc.testFn(s, res)
+		})
+	}
+}
+
+func (s *mainSuite) Test_BasicEvaluation() {
+	type tokInfo struct {
+		t rune
+		v string
+	}
+	tests := []struct {
+		in  string
+		out interface{}
+	}{
+		{"null", nil},
+		{"'bob'", "'bob'"},
+		{"123", int64(123)},
+		{"1.23", float64(1.23)},
+		{"true", true},
+		{"'hi' == 'hi'", true},
+		{"'hi' == 'hello'", false},
+		{"123 == 123", true},
+		{"123 == 321", false},
+		{"1.23 == 1.23", true},
+		{"1.23 == 3.21", false},
+		{"true == true", true},
+		{"true == false", false},
+	}
+
+	for _, tc := range tests {
+		s.Run(tc.in, func() {
+			ast := parse(tc.in)
+			out, err := evaluate(ast)
+
+			s.NoError(err)
+			s.Equal(tc.out, out)
 		})
 	}
 }
