@@ -44,14 +44,14 @@ func (s *mainSuite) Test_LexingSimple() {
 		{"'It''s open source!'", "String", "'It''s open source!'"},
 		{" ", "Whitespace", " "},
 		{"!", "Not", "!"},
-		{"<", "Less", "<"},
-		{"<=", "LessOrEqual", "<="},
-		{">", "Greater", ">"},
-		{">=", "GreaterOrEqual", ">="},
-		{"==", "Equal", "=="},
-		{"!=", "NotEqual", "!="},
-		{"&&", "And", "&&"},
-		{"||", "Or", "||"},
+		{"<", "Operator", "<"},
+		{"<=", "Operator", "<="},
+		{">", "Operator", ">"},
+		{">=", "Operator", ">="},
+		{"==", "Operator", "=="},
+		{"!=", "Operator", "!="},
+		{"&&", "Operator", "&&"},
+		{"||", "Operator", "||"},
 	}
 
 	// fmt.Printf("---- exprLexer exprLexer.Symbols() %+v\n", exprLexer.Symbols())
@@ -140,8 +140,14 @@ func (s *mainSuite) Test_ParsingExpression() {
 	}{
 		{"true == true", func(s *mainSuite, res *expr) {
 			s.True(res.LHS.True())
-			s.Equal("Equal", res.Operator.Kind())
+			s.Equal("==", res.OpString())
 			s.True(res.RHS.True())
+		}},
+		{"1 < 2", func(s *mainSuite, res *expr) {
+			lhs, err := res.LHS.Evaluate()
+			s.NoError(err)
+			s.Equal(int64(1), lhs)
+			s.NotNil(res.Op)
 		}},
 	}
 
@@ -175,6 +181,11 @@ func (s *mainSuite) Test_BasicEvaluation() {
 		{"1.23 == 3.21", false},
 		{"true == true", true},
 		{"true == false", false},
+		{"1 < 2", true},
+		{"2 < 1", false},
+		{"1 != 2", true},
+		{"1 != 'asdf'", true},
+		{"'asdf' != 'asdf'", false},
 	}
 
 	for _, tc := range tests {

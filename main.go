@@ -28,13 +28,17 @@ func evaluate(ast *expr) (interface{}, error) {
 }
 
 type expr struct {
-	LHS      *Literal  `@@`
-	Operator *Operator `( @@`
-	RHS      *Literal  `@@ )?`
+	LHS *Literal `@@`
+	Op  *string  `( @Operator`
+	RHS *Literal `@@ )?`
+}
+
+func (e *expr) OpString() string {
+	return *e.Op
 }
 
 func (e *expr) Evaluate() (interface{}, error) {
-	if e.Operator == nil {
+	if e.Op == nil {
 		return e.LHS.Evaluate()
 	}
 
@@ -47,7 +51,23 @@ func (e *expr) Evaluate() (interface{}, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Error on RHC evaluation: %w", err)
 	}
-	return e.Operator.Evaluate(lhs, rhs)
+
+	return e.evaluate(lhs, rhs)
+}
+
+func (e *expr) evaluate(lhs, rhs interface{}) (bool, error) {
+	switch *e.Op {
+	case "==":
+		return lhs == rhs, nil
+	case "!=":
+		return lhs != rhs, nil
+	case "<":
+		l, _ := lhs.(int64)
+		r, _ := rhs.(int64) // TODO: Handle errors, and floats
+		return l < r, nil
+	default:
+		panic(fmt.Sprintf("op '%s' not implemented", *e.Op))
+	}
 }
 
 // Literal is a "union" type, where only one matching value will be present.
@@ -74,32 +94,7 @@ func (l *Literal) Evaluate() (interface{}, error) {
 	case l.Bool != nil:
 		return bool(*l.Bool), nil
 	default:
-		panic("not implemented")
-	}
-}
-
-type Operator struct {
-	LessOrEqual *string `@LessOrEqual`
-	Equal       *string `| @Equal`
-}
-
-func (o *Operator) Kind() string {
-	switch {
-	case o.LessOrEqual != nil:
-		return "LessOrEqual"
-	case o.Equal != nil:
-		return "Equal"
-	default:
-		panic("Missing operator kind")
-	}
-}
-
-func (o *Operator) Evaluate(lhs, rhs interface{}) (bool, error) {
-	switch {
-	case o.Equal != nil:
-		return lhs == rhs, nil
-	default:
-		return false, nil
+		panic("empty literal")
 	}
 }
 
@@ -131,15 +126,9 @@ var (
 		String = '([^\\']|'')*'
 		Whitespace = \s+
 
-		LessOrEqual = <=
-		Less = <[^=]*
-		GreaterOrEqual = >=
-		Greater = >
-		Equal = ==
-		NotEqual = !=
+		Operator = (<=?|>=?|==|!=|&&|\|\|)
+
 		Not = !
-		And = &&
-		Or = \|\|
 
 		Ident = [[:ascii:]][\w\d]*
 		`))
