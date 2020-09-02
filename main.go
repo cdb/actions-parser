@@ -1,9 +1,7 @@
 package main
 
-import (
-	"fmt"
-)
+import "github.com/cdb/actions-parser/cmd"
 
 func main() {
-	fmt.Println("hello")
+	cmd.Execute()
 }

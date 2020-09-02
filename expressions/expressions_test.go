@@ -50,8 +50,6 @@ func (s *testSuite) Test_LexingSimple() {
 		{"||", "Operator", "||"},
 	}
 
-	// fmt.Printf("---- Lexer Lexer.Symbols() %+v\n", Lexer.Symbols())
-
 	for _, tc := range tests {
 		s.Run(tc.in, func() {
 			lx, err := Lexer.Lex(strings.NewReader(tc.in))
@@ -115,7 +113,7 @@ func (s *testSuite) Test_ParsingSimple() {
 
 	for _, tc := range tests {
 		s.Run(tc.in, func() {
-			res := parse(tc.in)
+			res := Parse(tc.in)
 			tc.testFn(s, res.LHS)
 		})
 	}
@@ -141,7 +139,7 @@ func (s *testSuite) Test_ParsingExpression() {
 
 	for _, tc := range tests {
 		s.Run(tc.in, func() {
-			res := parse(tc.in)
+			res := Parse(tc.in)
 			tc.testFn(s, res)
 		})
 	}
@@ -174,8 +172,8 @@ func (s *testSuite) Test_BasicEvaluation() {
 
 	for _, tc := range tests {
 		s.Run(tc.in, func() {
-			ast := parse(tc.in)
-			out, err := evaluate(ast, nil)
+			ast := Parse(tc.in)
+			out, err := Evaluate(ast, nil)
 
 			s.NoError(err)
 			s.Equal(tc.out, out, printTokens(tc.in))
@@ -199,8 +197,8 @@ func (s *testSuite) Test_ObjectLiterals() {
 
 	for _, tc := range tests {
 		s.Run(tc.in, func() {
-			ast := parse(tc.in)
-			out, err := evaluate(ast, tc.context)
+			ast := Parse(tc.in)
+			out, err := Evaluate(ast, tc.context)
 
 			s.NoError(err)
 			s.Equal(tc.out, out, printTokens(tc.in))

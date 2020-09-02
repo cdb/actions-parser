@@ -18,7 +18,7 @@ var (
 	)
 )
 
-func parse(in string) *Expression {
+func Parse(in string) *Expression {
 	ast := &Expression{}
 
 	err := parser.Parse(strings.NewReader(in), ast)
@@ -28,6 +28,6 @@ func parse(in string) *Expression {
 	return ast
 }
 
-func evaluate(ast *Expression, context Context) (interface{}, error) {
+func Evaluate(ast *Expression, context Context) (interface{}, error) {
 	return ast.Evaluate(context)
 }
