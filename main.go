@@ -19,7 +19,6 @@ func parse(in string) *expr {
 	err := parser.Parse(strings.NewReader(in), ast)
 	if err != nil {
 		fmt.Printf("----  err %+v\n", err)
-
 	}
 	return ast
 }
@@ -66,8 +65,24 @@ var (
 		Integer = -?\d+
 		String = '([^\\']|'')*'
 		Whitespace = \s+
+
+		LessOrEqual = <=
+		Less = <[^=]*
+		GreaterOrEqual = >=
+		Greater = >
+		Equal = ==
+		NotEqual = !=
+		Not = !
+		And = &&
+		Or = \|\|
+
 		Ident = [[:ascii:]][\w\d]*
-	  `))
+		`))
+
+	// TODO:
+	// #( )	Logical grouping
+	// [ ]	Index
+	// .	Property dereference
 
 	parser = participle.MustBuild(&expr{},
 		participle.Lexer(exprLexer),

@@ -43,6 +43,15 @@ func (s *mainSuite) Test_LexingSimple() {
 		{"'Mona the Octocat'", "String", "'Mona the Octocat'"},
 		{"'It''s open source!'", "String", "'It''s open source!'"},
 		{" ", "Whitespace", " "},
+		{"!", "Not", "!"},
+		{"<", "Less", "<"},
+		{"<=", "LessOrEqual", "<="},
+		{">", "Greater", ">"},
+		{">=", "GreaterOrEqual", ">="},
+		{"==", "Equal", "=="},
+		{"!=", "NotEqual", "!="},
+		{"&&", "And", "&&"},
+		{"||", "Or", "||"},
 	}
 
 	// fmt.Printf("---- exprLexer exprLexer.Symbols() %+v\n", exprLexer.Symbols())
@@ -78,7 +87,6 @@ func (s *mainSuite) Test_ParsingSimple() {
 			s.True(res.IsNil())
 		}},
 		{"false", func(s *mainSuite, res *Literal) {
-			fmt.Printf("----  res %+v\n", res)
 			s.NotNil(res.Bool)
 			s.False(res.True())
 		}},
@@ -119,5 +127,4 @@ func (s *mainSuite) Test_ParsingSimple() {
 			tc.testFn(s, res.Literal)
 		})
 	}
-
 }
