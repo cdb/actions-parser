@@ -3,6 +3,7 @@ package expressions
 import (
 	"fmt"
 	"regexp"
+	"strings"
 )
 
 // Context of the running action which acts basically like a few different JSON objects.Context
@@ -76,7 +77,33 @@ func (l *Literal) Evaluate(context Context) (interface{}, error) {
 	case l.Obj != nil:
 		o := *l.Obj
 		return o.Evaluate(context)
+	case l.Func != nil:
+		f := *l.Func
+		return f.Evaluate(context)
 	default:
 		panic("empty literal")
+	}
+}
+
+func (f *Function) Evaluate(context Context) (interface{}, error) {
+	switch f.Name {
+	case "startsWith":
+		if len(f.Args) != 2 {
+			return nil, fmt.Errorf("Starts with needs 2 arguments but has %d", len(f.Args))
+		}
+		eval1, err := f.Args[0].Evaluate(context)
+		if err != nil {
+			return nil, err
+		}
+		eval2, err := f.Args[1].Evaluate(context)
+		if err != nil {
+			return nil, err
+		}
+		arg1, _ := eval1.(string)
+		arg2, _ := eval2.(string) // TODO: Handle errors, and floats
+
+		return strings.HasPrefix(strings.ReplaceAll(arg1, "'", ""), strings.ReplaceAll(arg2, "'", "")), nil
+	default:
+		panic(fmt.Sprintf("function %s not yet implemented", f.Name))
 	}
 }

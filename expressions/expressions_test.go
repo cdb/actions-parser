@@ -206,6 +206,26 @@ func (s *testSuite) Test_ObjectLiterals() {
 	}
 }
 
+func (s *testSuite) Test_Functions() {
+	tests := []struct {
+		in  string
+		out interface{}
+	}{
+		{"startsWith('Hello World', 'Hello')", true},
+		{"startsWith('Hello World', 'Bob')", false},
+	}
+
+	for _, tc := range tests {
+		s.Run(tc.in, func() {
+			ast := Parse(tc.in)
+			out, err := Evaluate(ast, nil)
+
+			s.NoError(err)
+			s.Equal(tc.out, out, printTokens(tc.in))
+		})
+	}
+}
+
 func printTokens(in string) string {
 	lx, _ := Lexer.Lex(strings.NewReader(in))
 	toks, _ := lexer.ConsumeAll(lx)

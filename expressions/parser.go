@@ -14,18 +14,24 @@ type Expression struct {
 
 // Literal is a "union" type, only one value with be non-nil, depending on the token type passed in.
 type Literal struct {
-	Nil   *string  `@Null`
-	Str   *string  `| @String`
-	Int   *int64   `| @Integer`
-	Float *float64 `| @Float`
-	Bool  *myBool  `| @Bool`
-	Obj   *Object  `| @@`
+	Nil   *string   `@Null`
+	Str   *string   `| @String`
+	Int   *int64    `| @Integer`
+	Float *float64  `| @Float`
+	Bool  *myBool   `| @Bool`
+	Func  *Function `| @@`
+	Obj   *Object   `| @@`
 }
 
 // Object represents one of the context objects available in expressions (like github or env)
 type Object struct {
 	Head  string   `@Context`
 	Props []string `{ @ContextProperty }`
+}
+
+type Function struct {
+	Name string     `@Ident`
+	Args []*Literal `"(" (@@ ("," @@)*)? ")"`
 }
 
 type myBool bool
