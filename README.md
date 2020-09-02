@@ -17,3 +17,4 @@ Nothing is done in a vacuum, especially stuff that I think of a "deep computer s
 - The [PEG](https://github.com/pointlander/peg) project, as well as reading up on the [ANTLR project](https://www.antlr.org/) got me thinking about language grammars
 - I loved the sentence `Lex is not code that you live in. It is code you write once and then use for a long time. Ok if the code is not clean.` from [this article about using GoYACC](https://about.sourcegraph.com/go/gophercon-2018-how-to-write-a-parser-in-go/)
 - [Various](https://blog.gopheracademy.com/advent-2014/parsers-lexers/) [other](https://adampresley.github.io/2015/04/12/writing-a-lexer-and-parser-in-go-part-1.html) [blog](https://blog.gopheracademy.com/advent-2017/parsing-with-antlr4-and-go/) posts as well
+- Oh, and [Regex101](https://regex101.com/) for always being super helpful!
