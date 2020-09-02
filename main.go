@@ -23,8 +23,8 @@ func parse(in string) *expr {
 	return ast
 }
 
-func evaluate(ast *expr) (interface{}, error) {
-	return ast.Evaluate()
+func evaluate(ast *expr, context Context) (interface{}, error) {
+	return ast.Evaluate(context)
 }
 
 type expr struct {
@@ -37,17 +37,17 @@ func (e *expr) OpString() string {
 	return *e.Op
 }
 
-func (e *expr) Evaluate() (interface{}, error) {
+func (e *expr) Evaluate(context Context) (interface{}, error) {
 	if e.Op == nil {
-		return e.LHS.Evaluate()
+		return e.LHS.Evaluate(context)
 	}
 
-	lhs, err := e.LHS.Evaluate()
+	lhs, err := e.LHS.Evaluate(context)
 	if err != nil {
 		return nil, fmt.Errorf("Error on LSH evaluation: %w", err)
 	}
 
-	rhs, err := e.RHS.Evaluate()
+	rhs, err := e.RHS.Evaluate(context)
 	if err != nil {
 		return nil, fmt.Errorf("Error on RHC evaluation: %w", err)
 	}
@@ -79,9 +79,38 @@ type Literal struct {
 	Int   *int64   `| @Integer`
 	Float *float64 `| @Float`
 	Bool  *myBool  `| @Bool`
+	Obj   *Object  `| @@`
 }
 
-func (l *Literal) Evaluate() (interface{}, error) {
+type Object struct {
+	Head  string   `@Context`
+	Props []string `{ @ContextProperty }`
+}
+
+func (o *Object) Evaluate(context Context) (interface{}, error) {
+	var ret interface{}
+	ret, ok := context[o.Head]
+	if !ok {
+		return nil, fmt.Errorf("No root context named %s", o.Head)
+	}
+
+	for _, prop := range o.Props {
+		prop = strings.Replace(prop, ".", "", 1) // Remove the . in front
+		switch t := ret.(type) {
+		case map[string]interface{}:
+			if v, ok := t[prop]; ok {
+				ret = v
+			}
+		default:
+			panic("Context not structured as expected")
+		}
+	}
+	return ret, nil
+}
+
+type Context map[string]map[string]interface{}
+
+func (l *Literal) Evaluate(context Context) (interface{}, error) {
 	switch {
 	case l.Nil != nil:
 		return nil, nil
@@ -93,6 +122,9 @@ func (l *Literal) Evaluate() (interface{}, error) {
 		return *l.Float, nil
 	case l.Bool != nil:
 		return bool(*l.Bool), nil
+	case l.Obj != nil:
+		o := *l.Obj
+		return o.Evaluate(context)
 	default:
 		panic("empty literal")
 	}
@@ -125,6 +157,9 @@ var (
 		Integer = -?\d+
 		String = '([^\\']|'')*'
 		Whitespace = \s+
+
+		Context = (github|env|job|steps|runner|secrets|strategy|matrix|needs)
+		ContextProperty = \.[\w-]*
 
 		Operator = (<=?|>=?|==|!=|&&|\|\|)
 

@@ -132,7 +132,7 @@ func (s *mainSuite) Test_ParsingExpression() {
 			s.True(res.RHS.True())
 		}},
 		{"1 < 2", func(s *mainSuite, res *expr) {
-			lhs, err := res.LHS.Evaluate()
+			lhs, err := res.LHS.Evaluate(nil)
 			s.NoError(err)
 			s.Equal(int64(1), lhs)
 			s.NotNil(res.Op)
@@ -175,10 +175,39 @@ func (s *mainSuite) Test_BasicEvaluation() {
 	for _, tc := range tests {
 		s.Run(tc.in, func() {
 			ast := parse(tc.in)
-			out, err := evaluate(ast)
+			out, err := evaluate(ast, nil)
 
 			s.NoError(err)
-			s.Equal(tc.out, out)
+			s.Equal(tc.out, out, printTokens(tc.in))
 		})
 	}
+}
+
+func (s *mainSuite) Test_ObjectLiterals() {
+	tests := []struct {
+		in      string
+		context Context
+		out     interface{}
+	}{
+		{"github.token", Context{"github": {"token": "i-am-a-token"}}, "i-am-a-token"},
+		{"github.event.base_ref", Context{"github": {"event": map[string]interface{}{"base_ref": "i-am-the-base-ref"}}}, "i-am-the-base-ref"},
+		{"github.some-sha == github.other-sha", Context{"github": {"some-sha": "asdf", "other-sha": "asdf"}}, true},
+		{"github.some-sha == github.other-sha", Context{"github": {"some-sha": "asdf", "other-sha": "qwer"}}, false},
+	}
+
+	for _, tc := range tests {
+		s.Run(tc.in, func() {
+			ast := parse(tc.in)
+			out, err := evaluate(ast, tc.context)
+
+			s.NoError(err)
+			s.Equal(tc.out, out, printTokens(tc.in))
+		})
+	}
+}
+
+func printTokens(in string) string {
+	lx, _ := exprLexer.Lex(strings.NewReader(in))
+	toks, _ := lexer.ConsumeAll(lx)
+	return fmt.Sprintf("%d tokens found: %+v\n", len(toks), toks)
 }
