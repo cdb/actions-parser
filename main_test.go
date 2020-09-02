@@ -24,10 +24,6 @@ func (s *mainSuite) Test_LexingSimple() {
 	sym := exprLexer.Symbols()
 	sbr := lexer.SymbolsByRune(exprLexer)
 
-	type tokInfo struct {
-		t rune
-		v string
-	}
 	tests := []struct {
 		in  string
 		typ string
@@ -74,10 +70,6 @@ func (s *mainSuite) Test_LexingSimple() {
 }
 
 func (s *mainSuite) Test_ParsingSimple() {
-	type tokInfo struct {
-		t rune
-		v string
-	}
 	tests := []struct {
 		in     string
 		testFn func(*mainSuite, *Literal)
@@ -130,10 +122,6 @@ func (s *mainSuite) Test_ParsingSimple() {
 }
 
 func (s *mainSuite) Test_ParsingExpression() {
-	type tokInfo struct {
-		t rune
-		v string
-	}
 	tests := []struct {
 		in     string
 		testFn func(*mainSuite, *expr)
@@ -160,10 +148,6 @@ func (s *mainSuite) Test_ParsingExpression() {
 }
 
 func (s *mainSuite) Test_BasicEvaluation() {
-	type tokInfo struct {
-		t rune
-		v string
-	}
 	tests := []struct {
 		in  string
 		out interface{}
