@@ -1,4 +1,4 @@
-package main
+package expressions
 
 import (
 	"fmt"
@@ -9,20 +9,20 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type mainSuite struct {
+type testSuite struct {
 	suite.Suite
 }
 
 func TestMain(t *testing.T) {
-	suite.Run(t, new(mainSuite))
+	suite.Run(t, new(testSuite))
 }
 
-func (s *mainSuite) SetupTest() {
+func (s *testSuite) SetupTest() {
 }
 
-func (s *mainSuite) Test_LexingSimple() {
-	sym := exprLexer.Symbols()
-	sbr := lexer.SymbolsByRune(exprLexer)
+func (s *testSuite) Test_LexingSimple() {
+	sym := Lexer.Symbols()
+	sbr := lexer.SymbolsByRune(Lexer)
 
 	tests := []struct {
 		in  string
@@ -50,11 +50,11 @@ func (s *mainSuite) Test_LexingSimple() {
 		{"||", "Operator", "||"},
 	}
 
-	// fmt.Printf("---- exprLexer exprLexer.Symbols() %+v\n", exprLexer.Symbols())
+	// fmt.Printf("---- Lexer Lexer.Symbols() %+v\n", Lexer.Symbols())
 
 	for _, tc := range tests {
 		s.Run(tc.in, func() {
-			lx, err := exprLexer.Lex(strings.NewReader(tc.in))
+			lx, err := Lexer.Lex(strings.NewReader(tc.in))
 			s.NoError(err)
 
 			toks, err := lexer.ConsumeAll(lx)
@@ -69,45 +69,45 @@ func (s *mainSuite) Test_LexingSimple() {
 	}
 }
 
-func (s *mainSuite) Test_ParsingSimple() {
+func (s *testSuite) Test_ParsingSimple() {
 	tests := []struct {
 		in     string
-		testFn func(*mainSuite, *Literal)
+		testFn func(*testSuite, *Literal)
 	}{
-		{"null", func(s *mainSuite, res *Literal) {
+		{"null", func(s *testSuite, res *Literal) {
 			s.NotNil(res.Nil)
-			s.True(res.IsNil())
+			s.True(res.isNil())
 		}},
-		{"false", func(s *mainSuite, res *Literal) {
+		{"false", func(s *testSuite, res *Literal) {
 			s.NotNil(res.Bool)
-			s.False(res.True())
+			s.False(res.isTrue())
 		}},
-		{"true", func(s *mainSuite, res *Literal) {
+		{"true", func(s *testSuite, res *Literal) {
 			s.NotNil(res.Bool)
-			s.True(res.True())
+			s.True(res.isTrue())
 		}},
-		{"'qwebe'", func(s *mainSuite, res *Literal) {
+		{"'qwebe'", func(s *testSuite, res *Literal) {
 			s.NotNil(res.Str)
 			s.Equal(*res.Str, "'qwebe'")
 		}},
-		{"711", func(s *mainSuite, res *Literal) {
+		{"711", func(s *testSuite, res *Literal) {
 			s.NotNil(res.Int)
 			s.Equal(*res.Int, int64(711))
 		}},
-		{"-9.2", func(s *mainSuite, res *Literal) {
+		{"-9.2", func(s *testSuite, res *Literal) {
 			s.NotNil(res.Float)
 			s.Equal(*res.Float, float64(-9.2))
 		}},
 		// // "0xff" Worry about hex later
-		{"-2.99e-2", func(s *mainSuite, res *Literal) {
+		{"-2.99e-2", func(s *testSuite, res *Literal) {
 			s.NotNil(res.Float)
 			s.Equal(*res.Float, float64(-2.99e-2))
 		}},
-		{"'Mona the Octocat'", func(s *mainSuite, res *Literal) {
+		{"'Mona the Octocat'", func(s *testSuite, res *Literal) {
 			s.NotNil(res.Str)
 			s.Equal(*res.Str, "'Mona the Octocat'")
 		}},
-		{"'It''s open source!'", func(s *mainSuite, res *Literal) {
+		{"'It''s open source!'", func(s *testSuite, res *Literal) {
 			s.NotNil(res.Str)
 			s.Equal(*res.Str, "'It''s open source!'")
 		}},
@@ -121,17 +121,17 @@ func (s *mainSuite) Test_ParsingSimple() {
 	}
 }
 
-func (s *mainSuite) Test_ParsingExpression() {
+func (s *testSuite) Test_ParsingExpression() {
 	tests := []struct {
 		in     string
-		testFn func(*mainSuite, *expr)
+		testFn func(*testSuite, *Expression)
 	}{
-		{"true == true", func(s *mainSuite, res *expr) {
-			s.True(res.LHS.True())
-			s.Equal("==", res.OpString())
-			s.True(res.RHS.True())
+		{"true == true", func(s *testSuite, res *Expression) {
+			s.True(res.LHS.isTrue())
+			s.Equal("==", res.opString())
+			s.True(res.RHS.isTrue())
 		}},
-		{"1 < 2", func(s *mainSuite, res *expr) {
+		{"1 < 2", func(s *testSuite, res *Expression) {
 			lhs, err := res.LHS.Evaluate(nil)
 			s.NoError(err)
 			s.Equal(int64(1), lhs)
@@ -147,7 +147,7 @@ func (s *mainSuite) Test_ParsingExpression() {
 	}
 }
 
-func (s *mainSuite) Test_BasicEvaluation() {
+func (s *testSuite) Test_BasicEvaluation() {
 	tests := []struct {
 		in  string
 		out interface{}
@@ -183,7 +183,7 @@ func (s *mainSuite) Test_BasicEvaluation() {
 	}
 }
 
-func (s *mainSuite) Test_ObjectLiterals() {
+func (s *testSuite) Test_ObjectLiterals() {
 	tests := []struct {
 		in      string
 		context Context
@@ -209,7 +209,7 @@ func (s *mainSuite) Test_ObjectLiterals() {
 }
 
 func printTokens(in string) string {
-	lx, _ := exprLexer.Lex(strings.NewReader(in))
+	lx, _ := Lexer.Lex(strings.NewReader(in))
 	toks, _ := lexer.ConsumeAll(lx)
 	return fmt.Sprintf("%d tokens found: %+v\n", len(toks), toks)
 }
