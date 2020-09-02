@@ -190,7 +190,9 @@ func (s *mainSuite) Test_ObjectLiterals() {
 		out     interface{}
 	}{
 		{"github.token", Context{"github": {"token": "i-am-a-token"}}, "i-am-a-token"},
+		{"github['token']", Context{"github": {"token": "i-am-a-token"}}, "i-am-a-token"},
 		{"github.event.base_ref", Context{"github": {"event": map[string]interface{}{"base_ref": "i-am-the-base-ref"}}}, "i-am-the-base-ref"},
+		{"github['event']['base_ref']", Context{"github": {"event": map[string]interface{}{"base_ref": "i-am-the-base-ref"}}}, "i-am-the-base-ref"},
 		{"github.some-sha == github.other-sha", Context{"github": {"some-sha": "asdf", "other-sha": "asdf"}}, true},
 		{"github.some-sha == github.other-sha", Context{"github": {"some-sha": "asdf", "other-sha": "qwer"}}, false},
 	}

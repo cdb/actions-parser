@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/alecthomas/participle"
@@ -87,6 +88,8 @@ type Object struct {
 	Props []string `{ @ContextProperty }`
 }
 
+var propCleaner = regexp.MustCompile(`[\.\[\]']`)
+
 func (o *Object) Evaluate(context Context) (interface{}, error) {
 	var ret interface{}
 	ret, ok := context[o.Head]
@@ -95,7 +98,7 @@ func (o *Object) Evaluate(context Context) (interface{}, error) {
 	}
 
 	for _, prop := range o.Props {
-		prop = strings.Replace(prop, ".", "", 1) // Remove the . in front
+		prop = propCleaner.ReplaceAllString(prop, "") // Strip the leading . or wrapping [' ']
 		switch t := ret.(type) {
 		case map[string]interface{}:
 			if v, ok := t[prop]; ok {
@@ -159,7 +162,7 @@ var (
 		Whitespace = \s+
 
 		Context = (github|env|job|steps|runner|secrets|strategy|matrix|needs)
-		ContextProperty = \.[\w-]*
+		ContextProperty = (\.[\w-]+|\['[\w-]+'\])
 
 		Operator = (<=?|>=?|==|!=|&&|\|\|)
 
