@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -9,7 +10,8 @@ import (
 )
 
 var (
-	rootCmd = &cobra.Command{
+	runContext string
+	rootCmd    = &cobra.Command{
 		Use:   "actions-parser",
 		Short: "An actions expression parser",
 	}
@@ -17,6 +19,7 @@ var (
 
 func init() {
 	rootCmd.AddCommand(runCmd)
+	runCmd.Flags().StringVarP(&runContext, "context", "c", "", "json formatted context")
 }
 
 // Execute executes the root command.
@@ -33,8 +36,15 @@ var runCmd = &cobra.Command{
 			os.Exit(1)
 		}
 		fmt.Println("Running: ", args[0])
+
+		var jsonContext expressions.Context
+		if runContext != "" {
+			json.Unmarshal([]byte(runContext), &jsonContext)
+			fmt.Println("Including context", jsonContext)
+		}
+
 		ast := expressions.Parse(args[0])
-		out, err := expressions.Evaluate(ast, nil)
+		out, err := expressions.Evaluate(ast, jsonContext)
 		if err != nil {
 			fmt.Println("An error occurred:", err)
 		}
